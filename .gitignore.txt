@@ -1,0 +1,26 @@
+# VS Code
+.vscode/
+
+# Build
+build/
+bin/
+obj/
+out/
+
+# Compilação
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
