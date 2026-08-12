@@ -114,10 +114,11 @@ def criar_vertex_shader():
     layout (location = 1) in vec2 coordenada_textura;
 
     out vec2 texCoord;
-
+    uniform mat4 transformacao;
+    
     void main()
     {
-        gl_Position = vec4(posicao, 0.0, 1.0);
+        gl_Position = transformacao * vec4(posicao, 0.0, 1.0);
         texCoord = coordenada_textura;
     }
     """
@@ -183,7 +184,37 @@ def criar_programa_shader():
 
     return programa
 
+def matriz_translacao(x, y):
+    matriz = np.identity(4, dtype=np.float32)
 
+    matriz[0][3] = x
+    matriz[1][3] = y
+
+    return matriz
+
+def matriz_escala(x, y):
+    matriz = np.identity(4, dtype=np.float32)
+
+    matriz[0][0] = x
+    matriz[1][1] = y
+
+    return matriz
+
+def matriz_rotacao(angulo):
+    radianos = np.radians(angulo)
+
+    matriz = np.identity(4, dtype=np.float32)
+
+    matriz[0][0] = np.cos(radianos)
+    matriz[0][1] = -np.sin(radianos)
+
+    matriz[1][0] = np.sin(radianos)
+    matriz[1][1] = np.cos(radianos)
+
+    return matriz
+
+def combinar_transformacoes(translacao, rotacao, escala):
+    return translacao @ rotacao @ escala
 
 def main():
 
@@ -209,43 +240,77 @@ def main():
     vao = criar_vao(vbo)
 
     shader_program = criar_programa_shader()
+    local_transformacao = glGetUniformLocation(
+    shader_program,
+    "transformacao")
+
+
+    local_textura = glGetUniformLocation(
+    shader_program,
+    "textura"
+        )
+    
+
 
     # Loop principal
     while not glfw.window_should_close(janela):
 
-    
-
-        # Cor de fundo
+    # Cor de fundo
         glClearColor(0.05, 0.05, 0.05, 1.0)
 
-        # Limpa a tela
+    # Limpa a tela
         glClear(GL_COLOR_BUFFER_BIT)
 
-        # Usa nosso shader
+    # Calcula a rotação
+        tempo = glfw.get_time()
+        angulo = tempo * 50
+
+        translacao = matriz_translacao(0.3, 0.0)
+
+        rotacao = matriz_rotacao(angulo)
+
+        escala = matriz_escala(0.5, 0.5)
+
+        transformacao = combinar_transformacoes(
+            translacao,
+            rotacao,
+            escala
+        )
+
+    # Usa nosso shader
         glUseProgram(shader_program)
-        local_textura = glGetUniformLocation(shader_program, "textura")
+
+    # Envia a transformação para a GPU
+        glUniformMatrix4fv(
+            local_transformacao,
+            1,
+            GL_TRUE,
+            transformacao
+        )
+
         glUniform1i(local_textura, 0)
 
-        # Usa nosso VAO
+        glUniform1i(local_textura, 0)
+
+    # Usa nosso VAO
         glBindVertexArray(vao)
 
-        # Usa a textura do escudo
+    # Usa a textura do escudo
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, textura_escudo)
-        
-        
-        # Desenha os 4 vértices
+
+    # Desenha os 4 vértices
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
-        # Desvincula
+    # Desvincula
         glBindVertexArray(0)
         glUseProgram(0)
 
-        # Atualiza a janela
+    # Atualiza a janela
         glfw.swap_buffers(janela)
 
-        # Processa eventos
+    # Processa eventos
         glfw.poll_events()
-
+ 
 if __name__ == "__main__":
     main()
