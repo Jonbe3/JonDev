@@ -261,6 +261,19 @@ def main():
     # Limpa a tela
         glClear(GL_COLOR_BUFFER_BIT)
 
+    # Movimentação no Teclado   
+    if glfw.get_key(janela, glfw.KEY_D) == glfw.PRESS:
+        posicao_x += 0.01
+
+    if glfw.get_key(janela, glfw.KEY_A) == glfw.PRESS:
+        posicao_x -= 0.01
+
+    if glfw.get_key(janela, glfw.KEY_W) == glfw.PRESS:
+        posicao_y += 0.01
+
+    if glfw.get_key(janela, glfw.KEY_S) == glfw.PRESS:
+        posicao_y -= 0.01
+
     # Calcula a rotação
         tempo = glfw.get_time()
         angulo = tempo * 50
